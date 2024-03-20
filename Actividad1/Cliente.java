@@ -10,142 +10,115 @@ import java.util.Scanner;
 /**
  * Cliente
  */
-public class Cliente{
+public class Cliente {
+    static Scanner teclado = new Scanner(System.in);
+    static Socket cliente;
+    static DataOutputStream mensaje;
+     // Código de color ANSI para amarillo
+    static String colorAmarillo = "\u001B[33m";
+     // Código de color ANSI para rojo
+    static String colorRojo = "\u001B[31m";
+     // Código de color ANSI para azul
+    static String colorAzul = "\u001B[34m";
+     // Restablecer el color a su estado original
+    static String resetColor = "\u001B[0m";
+
     public static void main(String[] args) {
-        Scanner teclado = new Scanner(System.in);
+        // Scanner teclado = new Scanner(System.in);
         int opcion = 0;
         try {
-            Socket cliente = new Socket("localhost", 4500);
+            cliente = new Socket("localhost", 4500);
             /* MANDAMOS SALUDO AL SERVIDOR */
-            DataOutputStream mensaje = new DataOutputStream(cliente.getOutputStream());
-            mensaje.writeUTF("Hola servidor");
+            mensaje = new DataOutputStream(cliente.getOutputStream());
+            mensaje.writeUTF("Hi \uD83D\uDE0A");
             /* LEEMOS LO QUE NOS MANDA EL SERVIDOR */
             // El menú de operaciones
             DataInputStream entrada = new DataInputStream(cliente.getInputStream());
-            String mensaje2 = entrada.readUTF();
-            System.out.println(mensaje2);
+            String menu = entrada.readUTF();
+            System.out.println(menu);
             /* ESCRIBIMOS LA OPCIÓN DEL USUARIO */
             // Que operación se desea realizar
             opcion = teclado.nextInt();
             mensaje.writeInt(opcion);
-            hazOp(opcion, cliente, mensaje);
+            despliegaJuego(opcion);
         } catch (IOException ex) {
             Logger.getLogger(Cliente.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    public static void hazOp(int opcion, Socket cliente, DataOutputStream mensaje){
-        Scanner teclado = new Scanner(System.in);
-        int digito1 = 0;
-        int digito2 = 0;
+    /**
+     * Método que realiza la operación que el usuario desea
+     * 1-. El usuario tiene que adivinar el numero del servidor
+     * tiene 7 intentos.
+     * 2-. El usuario juega ahorcado con el servidor
+     * opcion = teclado.nextInt();
+            mensaje.writeInt(opcion);
+            despliegaJuego(opcion);
+     * @param opcion,  la opción que el usuario desea realizar
+     * @param cliente, el socket del cliente
+     * @param mensaje, el mensaje que se le enviará al servidor
+     */
+    public static void despliegaJuego(int opcion) {
+        int numero = 0;
+        int intentos = 0;
+        boolean acertado = false;
         try {
-            System.out.println("La opción actual es: " + opcion);
-            if (opcion == 4){
-                cliente.close();
-                System.out.println("Se ha cerrado la conexión");
-            }else{
-                if (opcion == 1){
-                    /* El cliente lee en su terminal que se le pide el primer digito */
+            switch (opcion) {
+                case 1:
+                    // Permite obtener mensajes del servidor
                     DataInputStream entradaPDS = new DataInputStream(cliente.getInputStream());
-                    String mensajeDeSolicitarPDS = (String) entradaPDS.readUTF();
-                    System.out.println(mensajeDeSolicitarPDS);
-                    /* El cliente escribe el primer digito */
-                    digito1 = teclado.nextInt();
-                    mensaje.writeInt(digito1);
-                    /* El cliente lee en su terminal que se le pide el segundo digito */
-                    DataInputStream entradaSDS = new DataInputStream(cliente.getInputStream());
-                    String mensajeDeSolicitarSDS = (String) entradaSDS.readUTF();
-                    System.out.println(mensajeDeSolicitarSDS);
-                    /* El cliente escribe el segundo digito */
-                    digito2 = teclado.nextInt();
-                    mensaje.writeInt(digito2);
-                    /* El cliente lee el resultado de la suma */
-                    DataInputStream entradaSuma = new DataInputStream(cliente.getInputStream());
-                    String respSuma = (String) entradaSuma.readUTF();
-                    System.out.println(respSuma);
-
-                    /* SE VUELVEN A CARGAR DATOS */
-                    DataOutputStream mensajeNS = new DataOutputStream(cliente.getOutputStream());
-                    mensajeNS.writeUTF("Hola servidor");
-                    /* LEEMOS LO QUE NOS MANDA EL SERVIDOR */
-                    // El menú de operaciones
-                    DataInputStream entradaNS = new DataInputStream(cliente.getInputStream());
-                    String mensaje2NS = entradaNS.readUTF();
-                    System.out.println(mensaje2NS);
-                    /* ESCRIBIMOS LA OPCIÓN DEL USUARIO */
-                    int op = teclado.nextInt();
-                    mensaje.writeInt(op);
-                    hazOp(op, cliente, mensajeNS);
-                }
-                /* RESTA */
-                if (opcion == 2){
-                    /* El cliente lee en su terminal que se le pide el primer digito */
-                    DataInputStream entradaPDR = new DataInputStream(cliente.getInputStream());
-                    String mensajeDeSolicitarPDR = (String) entradaPDR.readUTF();
-                    System.out.println(mensajeDeSolicitarPDR);
-                    /* El cliente escribe el primer digito */
-                    digito1 = teclado.nextInt();
-                    mensaje.writeInt(digito1);
-                    /* El cliente lee en su terminal que se le pide el segundo digito */
-                    DataInputStream entradaSDR = new DataInputStream(cliente.getInputStream());
-                    String mensajeDeSolicitarSDR = (String) entradaSDR.readUTF();
-                    System.out.println(mensajeDeSolicitarSDR);
-                    /* El cliente escribe el segundo digito */
-                    digito2 = teclado.nextInt();
-                    mensaje.writeInt(digito2);
-                    /* El cliente lee el resultado de la resta */
-                    DataInputStream entradaResta = new DataInputStream(cliente.getInputStream());
-                    String respResta = (String) entradaResta.readUTF();
-                    System.out.println(respResta);
-
-                    /* SE VUELVEN A CARGAR DATOS */
-                    DataOutputStream mensajeNR = new DataOutputStream(cliente.getOutputStream());
-                    mensajeNR.writeUTF("Hola servidor");
-                    /* LEEMOS LO QUE NOS MANDA EL SERVIDOR */
-                    // El menú de operaciones
-                    DataInputStream entradaNR = new DataInputStream(cliente.getInputStream());
-                    String mensaje2NR = entradaNR.readUTF();
-                    System.out.println(mensaje2NR);
-                    /* ESCRIBIMOS LA OPCIÓN DEL USUARIO */
-                    int op = teclado.nextInt();
-                    mensaje.writeInt(op);
-                    hazOp(op, cliente, mensajeNR);
-                }
-                /* MULTIPLICACIÓN */
-                if (opcion == 3){
-                    /* El cliente lee en su terminal que se le pide el primer digito */
-                    DataInputStream entradaPDM = new DataInputStream(cliente.getInputStream());
-                    String mensajeDeSolicitarPDM = (String) entradaPDM.readUTF();
-                    System.out.println(mensajeDeSolicitarPDM);
-                    /* El cliente escribe el primer digito */
-                    digito1 = teclado.nextInt();
-                    mensaje.writeInt(digito1);
-                    /* El cliente lee en su terminal que se le pide el segundo digito */
-                    DataInputStream entradaSDM = new DataInputStream(cliente.getInputStream());
-                    String mensajeDeSolicitarSDM = (String) entradaSDM.readUTF();
-                    System.out.println(mensajeDeSolicitarSDM);
-                    /* El cliente escribe el segundo digito */
-                    digito2 = teclado.nextInt();
-                    mensaje.writeInt(digito2);
-                    /* El cliente lee el resultado de la multiplicación */
-                    DataInputStream entradaMultiplicacion = new DataInputStream(cliente.getInputStream());
-                    String respMultiplicacion = (String) entradaMultiplicacion.readUTF();
-                    System.out.println(respMultiplicacion);
-
-                    /* SE VUELVEN A CARGAR DATOS */
-                    DataOutputStream mensajeNM = new DataOutputStream(cliente.getOutputStream());
-                    mensajeNM.writeUTF("Hola servidor");
-                    /* LEEMOS LO QUE NOS MANDA EL SERVIDOR */
-                    // El menú de operaciones
-                    DataInputStream entradaNM = new DataInputStream(cliente.getInputStream());
-                    String mensaje2NM = entradaNM.readUTF();
-                    System.out.println(mensaje2NM);
-                    /* ESCRIBIMOS LA OPCIÓN DEL USUARIO */
-                    int op = teclado.nextInt();
-                    mensaje.writeInt(op);
-                    hazOp(op, cliente, mensajeNM);
-                }
+                    String elServidorSolicita = (String) entradaPDS.readUTF();
+                    System.out.println(elServidorSolicita);
+                    // Mientras el usuario no haya acertado y no se hayan agotado los intentos
+                    while (intentos <=6 && !acertado) {
+                        /* El cliente escribe el primer digito */
+                        numero = teclado.nextInt();
+                        // mandamos el numero al servidor
+                        mensaje.writeInt(numero);
+                        intentos++;
+                        /* El cliente lee si el usuario acertó o no */
+                        DataInputStream entrada = new DataInputStream(cliente.getInputStream());
+                        String respSuma = (String) entrada.readUTF();
+                        System.out.println(respSuma);
+                        // Revisamos las respuestas del servidor para saber si el usuario acertó
+                        // Si ha acertado, se termina el juego
+                        if (respSuma.equals(colorAmarillo + "¡Felicidades, has adivinado el número!"+ resetColor + "\uD83D\uDE0A")) {
+                            acertado = true;
+                        }
+                    }
+                    break;
+                case 2:
+                    System.out.println("Juguemos ahorcado");
+                    despliegoJuegoIntento();
+                    break;
+                case 3:
+                    cliente.close();
+                    System.out.println("Se ha cerrado la conexión");
+                    break;
+                default:
+                    System.out.println("Opción no válida");
+                    despliegoJuegoIntento();
+                    break;
             }
+        } catch (IOException ex) {
+            Logger.getLogger(Cliente.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public static void despliegoJuegoIntento() {
+        try {
+            /* SE VUELVEN A CARGAR DATOS */
+            DataOutputStream mensajeNM = new DataOutputStream(cliente.getOutputStream());
+            mensajeNM.writeUTF("Hola servidor");
+            /* LEEMOS LO QUE NOS MANDA EL SERVIDOR */
+            // El menú de operaciones
+            DataInputStream entradaNM = new DataInputStream(cliente.getInputStream());
+            String mensaje2NM = entradaNM.readUTF();
+            System.out.println(mensaje2NM);
+            /* ESCRIBIMOS LA OPCIÓN DEL USUARIO */
+            int op = teclado.nextInt();
+            mensaje.writeInt(op);
+            despliegaJuego(op);
         } catch (IOException ex) {
             Logger.getLogger(Cliente.class.getName()).log(Level.SEVERE, null, ex);
         }
