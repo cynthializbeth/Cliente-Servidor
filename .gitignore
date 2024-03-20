@@ -1,0 +1,3 @@
+# Ignorar archivos .class en una carpeta y subcarpetas
+Actividad/*.class
+Ejemplo/*.class
