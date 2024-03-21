@@ -10,14 +10,15 @@ import java.util.logging.Logger;
  * Servidor
  */
 public interface Servidor {
-     // Código de color ANSI para amarillo
-     String colorAmarillo = "\u001B[33m";
-     // Código de color ANSI para rojo
-     String colorRojo = "\u001B[31m";
-     // Código de color ANSI para azul
-     String colorAzul = "\u001B[34m";
-     // Restablecer el color a su estado original
-     String resetColor = "\u001B[0m";
+    // Código de color ANSI para amarillo
+    String colorAmarillo = "\u001B[33m";
+    // Código de color ANSI para rojo
+    String colorRojo = "\u001B[31m";
+    // Código de color ANSI para azul
+    String colorAzul = "\u001B[34m";
+    // Restablecer el color a su estado original
+    String resetColor = "\u001B[0m";
+
     public static void main(String[] args) {
         try {
             ServerSocket servidor = new ServerSocket(4500);
@@ -46,7 +47,8 @@ public interface Servidor {
     }
 
     public static String mostrarMenu() {
-        return colorAmarillo + "\n-----[ Bienvenido ]-----" + resetColor + "\nTeclea una opción: \n1. Jugar a adivinar un número \n2. Jugar Ahorcado \n3. salir";
+        return colorAmarillo + "\n-----[ Bienvenido ]-----" + resetColor
+                + "\nTeclea una opción: \n1. Jugar a adivinar un número \n2. Jugar Ahorcado \n3. salir";
     }
 
     public static void solicitaOperacion(int op, Socket cn, ServerSocket serv, DataInputStream entrada) {
@@ -55,7 +57,8 @@ public interface Servidor {
             DataOutputStream mensaje = new DataOutputStream(cn.getOutputStream());
             switch (op) {
                 case 1:
-                    mensaje.writeUTF(colorRojo+"\nElegiste jugar Adivina el número: "+resetColor +"Elige un número del 1 al 100, tienes 7 intentos para adivinarlo");
+                    mensaje.writeUTF(colorRojo + "\nAdivina el número: " + resetColor
+                            + "Elige un número del 1 al 100, tienes 7 intentos para adivinarlo");
                     int numero = (int) (Math.random() * 100 + 1);
                     System.out.println("Número a adivinar: " + numero);
                     int iteraciones = 6;
@@ -67,12 +70,15 @@ public interface Servidor {
                         respuesta = entrada.readInt();
 
                         if (respuesta == numero) {
-                            mensaje.writeUTF(colorAmarillo + "¡Felicidades, has adivinado el número!"+ resetColor + "\uD83D\uDE0A");
+                            mensaje.writeUTF(colorAmarillo + "¡Felicidades, has adivinado el número!" + resetColor
+                                    + "\uD83D\uDE0A");
                             break;
                         } else if (respuesta < numero && intentos > 0) {
-                            mensaje.writeUTF("El número que pensé es más grande, te quedan "+ colorRojo + intentos + resetColor +" intentos");
+                            mensaje.writeUTF("El número que pensé es más grande, te quedan " + colorRojo + intentos
+                                    + resetColor + " intentos");
                         } else if (respuesta > numero && intentos > 0) {
-                            mensaje.writeUTF("El número que pensé es menor, te quedan "+ colorRojo + intentos + resetColor +" intentos");
+                            mensaje.writeUTF("El número que pensé es menor, te quedan " + colorRojo + intentos
+                                    + resetColor + " intentos");
                         }
                         iteraciones--;
                         intentos--;
@@ -80,15 +86,49 @@ public interface Servidor {
                     if (iteraciones < 0) {
                         mensaje.writeUTF("Lo siento, has perdido \uD83D\uDE2D");
                     }
-                    //despliegaNuevamente(cn, serv, entrada);
+                    despliegaNuevamente(cn, serv, entrada);
                     break;
                 case 2:
-                    mensaje.writeUTF("Juguemos ahorcado");
+                    // Lista con 15 paises
+                    String[] paises = { "Mexico", "Canada", "Japon", "Guatemala", "Belice", "Honduras", "Chile",
+                            "Nicaragua", "Haiti", "Panama", "Colombia", "Venezuela", "Brasil", "Argentina", "Uruguay" };
+                    int indice = (int) (Math.random() * 15);
+                    // El país a adivinar
+                    String pais = paises[indice];
+                    char guion = '_';
+                    String palabraGuiones = String.valueOf(guion).repeat(pais.length());
+                    mensaje.writeUTF(colorRojo + "\nAhorcado: " + resetColor + "Pensé en un país de " + pais.length()
+                            + " letras trata de adivinar que letras lo componen \uD83D\uDE0A\n" + palabraGuiones + "\n");
+                    System.out.println("País a adivinar: " + pais);
+                    int iteraciones2 = 5;
+                    String letra = "";
+                    int intentos2 = iteraciones2;
+                    // El usuario tiene hasta que se equivoque de letra 6 veces
+                    while (iteraciones2 >= 0) {
+                        letra = entrada.readUTF();
+                        if (!letra.isEmpty() && pais.contains(letra)) {
+                            for (int i = 0; i < pais.length(); i++) {
+                                if (pais.charAt(i) == letra.charAt(0)) {
+                                    StringBuilder sb = new StringBuilder(palabraGuiones);
+                                    sb.setCharAt(i, letra.charAt(0));
+                                    palabraGuiones = sb.toString();
+                                }
+                            }
+                            mensaje.writeUTF("La letra " + letra + " está en la palabra " + palabraGuiones);
+                            if (palabraGuiones.equals(pais)) {
+                                mensaje.writeUTF(colorAmarillo + "¡Felicidades, has adivinado la palabra!" + resetColor
+                                        + "\uD83D\uDE0A");
+                                break;
+                            }
+                        } else {
+                            mensaje.writeUTF("La letra " + letra + " no está en la palabra" + dameDibujo(intentos2));
+                            intentos2--;
+                        }
+                    }
                     despliegaNuevamente(cn, serv, entrada);
                     break;
                 case 3:
                     mensaje.writeUTF("Adios");
-                    // cn.close();
                     serv.close();
                     break;
                 default:
@@ -120,5 +160,18 @@ public interface Servidor {
         } catch (IOException ex) {
             Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    public static String dameDibujo(int intentos) {
+        String dibujo = "";
+        switch (intentos) {
+            case 5:
+                dibujo = "\n O \n/|\\\n/\\\n";
+                break;
+            default:
+                dibujo = "\n O \n";
+                break;
+        }
+        return dibujo;
     }
 }

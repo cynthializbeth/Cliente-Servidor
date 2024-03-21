@@ -8,21 +8,32 @@ import java.util.logging.Logger;
 import java.util.Scanner;
 
 /**
- * Cliente
+ * Cliente, el cliente que se conecta al servidor
+ * para jugar a adivinar un número o ahorcado
+ * 
+ * @author cynthializbeth
+ * @version 1.0
  */
 public class Cliente {
+    /* Scanner para leer datos del teclado */
     static Scanner teclado = new Scanner(System.in);
+    /* Socket del cliente */
     static Socket cliente;
+    /* Mensaje que se le enviará al servidor */
     static DataOutputStream mensaje;
-     // Código de color ANSI para amarillo
+    /* Código de color ANSI para amarillo */
     static String colorAmarillo = "\u001B[33m";
-     // Código de color ANSI para rojo
+    /* Código de color ANSI para rojo */
     static String colorRojo = "\u001B[31m";
-     // Código de color ANSI para azul
+    /* Código de color ANSI para azul */
     static String colorAzul = "\u001B[34m";
-     // Restablecer el color a su estado original
+    /* Restablecer el color a su estado original */
     static String resetColor = "\u001B[0m";
 
+    /**
+     * Método principal, el cliente se conecta al servidor y comunica
+     * si desea jugar a adivinar un número o ahorcado.
+     */
     public static void main(String[] args) {
         // Scanner teclado = new Scanner(System.in);
         int opcion = 0;
@@ -52,14 +63,16 @@ public class Cliente {
      * tiene 7 intentos.
      * 2-. El usuario juega ahorcado con el servidor
      * opcion = teclado.nextInt();
-            mensaje.writeInt(opcion);
-            despliegaJuego(opcion);
+     * mensaje.writeInt(opcion);
+     * despliegaJuego(opcion);
+     * 
      * @param opcion,  la opción que el usuario desea realizar
      * @param cliente, el socket del cliente
      * @param mensaje, el mensaje que se le enviará al servidor
      */
     public static void despliegaJuego(int opcion) {
         int numero = 0;
+        String letra = "";
         int intentos = 0;
         boolean acertado = false;
         try {
@@ -70,7 +83,7 @@ public class Cliente {
                     String elServidorSolicita = (String) entradaPDS.readUTF();
                     System.out.println(elServidorSolicita);
                     // Mientras el usuario no haya acertado y no se hayan agotado los intentos
-                    while (intentos <=6 && !acertado) {
+                    while (intentos <= 6 && !acertado) {
                         /* El cliente escribe el primer digito */
                         numero = teclado.nextInt();
                         // mandamos el numero al servidor
@@ -82,13 +95,35 @@ public class Cliente {
                         System.out.println(respSuma);
                         // Revisamos las respuestas del servidor para saber si el usuario acertó
                         // Si ha acertado, se termina el juego
-                        if (respSuma.equals(colorAmarillo + "¡Felicidades, has adivinado el número!"+ resetColor + "\uD83D\uDE0A")) {
+                        if (respSuma.equals(colorAmarillo + "¡Felicidades, has adivinado el número!" + resetColor
+                                + "\uD83D\uDE0A")) {
                             acertado = true;
                         }
                     }
+                    despliegoJuegoIntento();
                     break;
                 case 2:
-                    System.out.println("Juguemos ahorcado");
+                    DataInputStream entradaPDS2 = new DataInputStream(cliente.getInputStream());
+                    String elServidorSolicita2 = (String) entradaPDS2.readUTF();
+                    System.out.println(elServidorSolicita2);
+                    while (intentos <= 5 && !acertado) {
+                        /* El cliente escribe el primer digito */
+                        letra = teclado.next();
+                        mensaje.writeUTF(letra);
+                        DataInputStream entrada2 = new DataInputStream(cliente.getInputStream());
+                        String respAhorcado = entrada2.readUTF();
+                        System.out.println(respAhorcado);
+                        //mensaje.writeUTF(letra);
+                        // Revisamos las respuestas del servidor para saber si el usuario acertó
+                        // Si ha acertado, se termina el juego
+                        if (respAhorcado.equals(colorAmarillo + "¡Felicidades, has adivinado la palabra!" + resetColor
+                                + "\uD83D\uDE0A")) {
+                            acertado = true;
+                        } else if (respAhorcado.contains("no está en la palabra")) {
+                            intentos++;
+                        }
+                    }
+
                     despliegoJuegoIntento();
                     break;
                 case 3:
