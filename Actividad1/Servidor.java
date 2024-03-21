@@ -7,7 +7,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Servidor
+ * Servidor, el servidor que se conecta al cliente
+ * 
+ * @author cynthializbeth
+ * @version 1.0
  */
 public interface Servidor {
     // Código de color ANSI para amarillo
@@ -19,6 +22,9 @@ public interface Servidor {
     // Restablecer el color a su estado original
     String resetColor = "\u001B[0m";
 
+    /**
+     * Método principal, el servidor se conecta al cliente y comunica
+    */
     public static void main(String[] args) {
         try {
             ServerSocket servidor = new ServerSocket(4500);
@@ -46,11 +52,24 @@ public interface Servidor {
         }
     }
 
+    /**
+     * Método que muestra el menú de opciones al usuario
+     * 
+     * @return el menú de opciones
+     */
     public static String mostrarMenu() {
         return colorAmarillo + "\n-----[ Bienvenido ]-----" + resetColor
                 + "\nTeclea una opción: \n1. Jugar a adivinar un número \n2. Jugar Ahorcado \n3. salir";
     }
 
+    /**
+     * Método que realiza la operación que el usuario desea
+     * 
+     * @param op,      la opción que el usuario desea realizar
+     * @param cn,      el socket del cliente
+     * @param serv,    el servidor
+     * @param entrada, el mensaje que se le enviará al servidor
+     */
     public static void solicitaOperacion(int op, Socket cn, ServerSocket serv, DataInputStream entrada) {
         try {
             // Permite enviar mensajes al cliente
@@ -86,7 +105,7 @@ public interface Servidor {
                     if (iteraciones < 0) {
                         mensaje.writeUTF("Lo siento, has perdido \uD83D\uDE2D");
                     }
-                    despliegaNuevamente(cn, serv, entrada);
+                    despliegaNuevamente(cn, serv);
                     break;
                 case 2:
                     // Lista con 15 paises
@@ -103,29 +122,43 @@ public interface Servidor {
                     int iteraciones2 = 5;
                     String letra = "";
                     int intentos2 = iteraciones2;
+                    String salidaServidor = "";
                     // El usuario tiene hasta que se equivoque de letra 6 veces
                     while (iteraciones2 >= 0) {
                         letra = entrada.readUTF();
-                        if (!letra.isEmpty() && pais.contains(letra)) {
+                        if (!letra.isEmpty() && (pais.contains(letra) || pais.contains(letra.toUpperCase()))) {
                             for (int i = 0; i < pais.length(); i++) {
-                                if (pais.charAt(i) == letra.charAt(0)) {
+                                if (pais.charAt(i) == letra.charAt(0) || pais.charAt(i) == letra.toUpperCase().charAt(0)){
                                     StringBuilder sb = new StringBuilder(palabraGuiones);
+                                    if (i == 0) {
+                                        sb.setCharAt(i, letra.toUpperCase().charAt(0));
+                                        palabraGuiones = sb.toString();
+                                    } else {
                                     sb.setCharAt(i, letra.charAt(0));
                                     palabraGuiones = sb.toString();
+                                    }
                                 }
                             }
-                            mensaje.writeUTF("La letra " + letra + " está en la palabra " + palabraGuiones);
-                            if (palabraGuiones.equals(pais)) {
-                                mensaje.writeUTF(colorAmarillo + "¡Felicidades, has adivinado la palabra!" + resetColor
-                                        + "\uD83D\uDE0A");
+                            salidaServidor = "La letra " + letra + " está en la palabra " + palabraGuiones;
+                            if (palabraGuiones.equals(pais) || palabraGuiones.equals(pais.toUpperCase())) {
+                                salidaServidor += colorAmarillo + "\n¡Felicidades, has adivinado la palabra!" + resetColor
+                                        + "\uD83D\uDE0A";
+                                mensaje.writeUTF(salidaServidor);
                                 break;
+                            } else {
+                                mensaje.writeUTF(salidaServidor);
                             }
                         } else {
-                            mensaje.writeUTF("La letra " + letra + " no está en la palabra" + dameDibujo(intentos2));
+                            salidaServidor = "La letra " + letra + " no está en la palabra" + dameDibujo(intentos2);
+                            iteraciones2--;
                             intentos2--;
+                            if (iteraciones2 < 0) {
+                                salidaServidor += "Lo siento, has perdido \uD83D\uDE2D";
+                            }
+                            mensaje.writeUTF(salidaServidor);
                         }
                     }
-                    despliegaNuevamente(cn, serv, entrada);
+                    despliegaNuevamente(cn, serv);
                     break;
                 case 3:
                     mensaje.writeUTF("Adios");
@@ -133,7 +166,7 @@ public interface Servidor {
                     break;
                 default:
                     mensaje.writeUTF("Opción no válida");
-                    despliegaNuevamente(cn, serv, entrada);
+                    despliegaNuevamente(cn, serv);
                     break;
             }
         } catch (IOException ex) {
@@ -141,7 +174,13 @@ public interface Servidor {
         }
     }
 
-    public static void despliegaNuevamente(Socket cn, ServerSocket serv, DataInputStream entrada) {
+    /**
+     * Método que despliega nuevamente el menú de opciones al usuario
+     * 
+     * @param cn,   el socket del cliente
+     * @param serv, el servidor
+     */
+    public static void despliegaNuevamente(Socket cn, ServerSocket serv) {
         try {
             /* VOLVER A CARGAR DATOS */
             DataInputStream entradaNS = new DataInputStream(cn.getInputStream());
@@ -162,14 +201,32 @@ public interface Servidor {
         }
     }
 
+    /**
+     * Método que despliega el dibujo del ahorcado
+     * 
+     * @param intentos, los intentos que le quedan al usuario
+     * @return el dibujo del ahorcado
+     */
     public static String dameDibujo(int intentos) {
         String dibujo = "";
         switch (intentos) {
             case 5:
-                dibujo = "\n O \n/|\\\n/\\\n";
-                break;
-            default:
                 dibujo = "\n O \n";
+                break;
+            case 4:
+                dibujo = "\n O \n | \n";
+                break;
+            case 3:
+                dibujo = "\n O \n/| \n";
+                break;
+            case 2:
+                dibujo = "\n O \n/|\\ \n";
+                break;
+            case 1:
+                dibujo = "\n O \n/|\\ \n/ \n";
+                break;   
+            default:
+                dibujo = "\n O \n/|\\ \n/ \\ \n";
                 break;
         }
         return dibujo;

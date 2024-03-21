@@ -113,17 +113,14 @@ public class Cliente {
                         DataInputStream entrada2 = new DataInputStream(cliente.getInputStream());
                         String respAhorcado = entrada2.readUTF();
                         System.out.println(respAhorcado);
-                        //mensaje.writeUTF(letra);
                         // Revisamos las respuestas del servidor para saber si el usuario acertó
                         // Si ha acertado, se termina el juego
-                        if (respAhorcado.equals(colorAmarillo + "¡Felicidades, has adivinado la palabra!" + resetColor
-                                + "\uD83D\uDE0A")) {
+                        if (respAhorcado.contains("\uD83D\uDE0A")) {
                             acertado = true;
                         } else if (respAhorcado.contains("no está en la palabra")) {
                             intentos++;
                         }
                     }
-
                     despliegoJuegoIntento();
                     break;
                 case 3:
@@ -140,6 +137,15 @@ public class Cliente {
         }
     }
 
+    /**
+     * Método que realiza la operación que el usuario desea
+     * 1-. El usuario tiene que adivinar el numero del servidor
+     * tiene 7 intentos.
+     * 2-. El usuario juega ahorcado con el servidor
+     * opcion = teclado.nextInt();
+     * mensaje.writeInt(opcion);
+     * despliegaJuego(opcion);
+     */
     public static void despliegoJuegoIntento() {
         try {
             /* SE VUELVEN A CARGAR DATOS */
