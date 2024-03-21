@@ -138,13 +138,8 @@ public class Cliente {
     }
 
     /**
-     * Método que realiza la operación que el usuario desea
-     * 1-. El usuario tiene que adivinar el numero del servidor
-     * tiene 7 intentos.
-     * 2-. El usuario juega ahorcado con el servidor
-     * opcion = teclado.nextInt();
-     * mensaje.writeInt(opcion);
-     * despliegaJuego(opcion);
+     * Método que establece de nuevo la conexión con el servidor
+     * para que el usuario pueda jugar nuevamente.
      */
     public static void despliegoJuegoIntento() {
         try {
